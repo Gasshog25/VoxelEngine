@@ -11,12 +11,11 @@ setlocal enabledelayedexpansion
 SET MainSource=src/main.cpp
 
 SET sources=Libraries\src\ThirdParty\stb_image\stb_image.cpp Libraries\src\ThirdParty\glad\glad.c
-for /f "delims=" %%f in ('dir /b /a-d Libraries\src\ThirdParty\imgui\*.cpp') do SET sources=!sources! Libraries\src\ThirdParty\imgui\%%f
 for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Graphics\*.cpp') do SET sources=!sources! Libraries\src\Graphics\%%f
 REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\*.cpp') do SET sources=!sources! Libraries\src\%%f
 
 SET includes=-I Libraries/includes -I Libraries/includes/ThirdParty -I Libraries\includes\Graphics
-SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lstb_image -lpsapi
+SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lstb_image -lpsapi -limgui
 
 SET outputName=main
 
@@ -104,4 +103,4 @@ if %IsRELEASE%==true (
     )
 )
 
-REM g++ -std=c++17 -shared -o mylib.dll mylib.cpp
+REM g++ -std=c++20 -shared -o mylib.dll mylib.cpp
