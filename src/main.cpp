@@ -1,3 +1,7 @@
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
 #include <iostream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -185,6 +189,11 @@ int main() {
 
 	glm::vec4 lightColor = glm::vec4(0.99f, 0.98f, 1.0f, 1.0f);
 	glm::vec4 AmbientLight = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	float a = 0.3;
+	float b = 0.7;
+	glm::vec3 SunDirection = glm::vec3(1.0f, 1.0f, 1.0f);
+	float SunIntensity = 1.0f;
+
 	float AmbientStrength = 0.15f;
 	glm::vec3 lightPos = glm::vec3(0.7f, 0.8f, 0.7f);
 	glm::mat4 lightModel = glm::mat4(1.0f);
@@ -196,6 +205,11 @@ int main() {
 	glUniform4fv(glGetUniformLocation(shaderProgram.GetID(), "AmbientLight"), 1, glm::value_ptr(AmbientLight * AmbientStrength));
 	glUniform3fv(glGetUniformLocation(shaderProgram.GetID(), "lightPos"), 1, glm::value_ptr(lightPos));
 
+	glUniform1f(glGetUniformLocation(shaderProgram.GetID(), "a"), a);
+	glUniform1f(glGetUniformLocation(shaderProgram.GetID(), "b"), b);
+	glUniform3fv(glGetUniformLocation(shaderProgram.GetID(), "SunDirection"), 1, glm::value_ptr(SunDirection));
+	glUniform1f(glGetUniformLocation(shaderProgram.GetID(), "SunIntensity"), SunIntensity);
+
 	lightSahder.Activate();
 	glUniformMatrix4fv(glGetUniformLocation(lightSahder.GetID(), "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
 	glUniform4fv(glGetUniformLocation(lightSahder.GetID(), "lightColor"), 1, glm::value_ptr(lightColor));
@@ -204,9 +218,21 @@ int main() {
 
     Camera cam = Camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
     
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+
     float StartTime = glfwGetTime();
     float ElapseTime = 1.0f / 60.0f;
     long int frame = 0;
+
+	float FOV = 75.0f;
+	float nearPlane = 0.1f;
+	float farPlane = 100.0f;
 	
     // Render loop
     glEnable(GL_DEPTH_TEST);
@@ -231,8 +257,14 @@ int main() {
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+
         cam.Inputs(window, ElapseTime);
-        cam.updateMatrix(75.0f, 0.1f, 1000.0f);
+        cam.updateMatrix(FOV, nearPlane, farPlane);
 
 
         // Draw our first triangle
@@ -245,16 +277,83 @@ int main() {
         // Draw on the screen
         glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
+
 		lightSahder.Activate();
 		cam.Matrix(lightSahder, "camMatrix");
 		VAO2.Bind();
 		glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+
+		ImGui::Begin("Debug Window");
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::SliderFloat("FOV", &FOV, 10.0f, 120.0f);
+		ImGui::InputFloat("Near Plane", &nearPlane, 0.1f, 0.1f);
+		ImGui::InputFloat("Far Plane", &farPlane, 1.0f, 1.0f);
+		if (ImGui::InputFloat3("Object Position", glm::value_ptr(CubePos), "%.2f")) {
+			CubeModel = glm::mat4(1.0f);
+			CubeModel = glm::translate(CubeModel, CubePos);
+			shaderProgram.Activate();
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram.GetID(), "model"), 1, GL_FALSE, glm::value_ptr(CubeModel));
+		}
+
+		if (ImGui::InputFloat3("Light Position", glm::value_ptr(lightPos), "%.2f")) {
+			lightModel = glm::mat4(1.0f);
+			lightModel = glm::translate(lightModel, lightPos);
+			lightSahder.Activate();
+			glUniformMatrix4fv(glGetUniformLocation(lightSahder.GetID(), "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
+
+			shaderProgram.Activate();
+			glUniform3fv(glGetUniformLocation(shaderProgram.GetID(), "LightPos"), 1, glm::value_ptr(lightPos));
+		}
+		if (ImGui::ColorEdit4("Light Color", glm::value_ptr(lightColor))) {
+			lightSahder.Activate();
+			glUniform4fv(glGetUniformLocation(lightSahder.GetID(), "lightColor"), 1, glm::value_ptr(lightColor));
+
+			shaderProgram.Activate();
+			glUniform4fv(glGetUniformLocation(shaderProgram.GetID(), "lightColor"), 1, glm::value_ptr(lightColor));
+		}
+		if (ImGui::ColorEdit4("Ambient Light", glm::value_ptr(AmbientLight))) {
+			shaderProgram.Activate();
+			glUniform4fv(glGetUniformLocation(shaderProgram.GetID(), "AmbientLight"), 1, glm::value_ptr(AmbientLight * AmbientStrength));
+		}
+		if (ImGui::InputFloat("Ambient Light", &AmbientStrength)) {
+			shaderProgram.Activate();
+			glUniform4fv(glGetUniformLocation(shaderProgram.GetID(), "AmbientLight"), 1, glm::value_ptr(AmbientLight * AmbientStrength));
+		}
+		if (ImGui::InputFloat3("Sun Direction", glm::value_ptr(SunDirection), "%.2f")) {
+			shaderProgram.Activate();
+			glUniform3fv(glGetUniformLocation(shaderProgram.GetID(), "SunDirection"), 1, glm::value_ptr(SunDirection));
+		}
+		if (ImGui::InputFloat("Sun Intensity", &SunIntensity)) {
+			shaderProgram.Activate();
+			glUniform1f(glGetUniformLocation(shaderProgram.GetID(), "SunIntensity"), SunIntensity);
+		}
+		if (ImGui::InputFloat("a", &a)) {
+			shaderProgram.Activate();
+			glUniform1f(glGetUniformLocation(shaderProgram.GetID(), "a"), a);
+		}
+		if (ImGui::InputFloat("b", &b)) {
+			shaderProgram.Activate();
+			glUniform1f(glGetUniformLocation(shaderProgram.GetID(), "b"), b);
+		}
+
+		ImGui::InputFloat3("Camera Position", glm::value_ptr(cam.GetPosition()));
+		ImGui::InputFloat3("Camera Orientation", glm::value_ptr(cam.GetOrientation()));
+
+
+		ImGui::End();
+
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         glfwSwapBuffers(window);
 		frame++;
         ElapseTime = glfwGetTime() - StartTime;
     }
 
+
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
 
 
     VAO1.Delete();
