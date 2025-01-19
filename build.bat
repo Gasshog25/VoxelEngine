@@ -10,7 +10,7 @@ setlocal enabledelayedexpansion
 
 SET MainSource=src/main.cpp
 
-SET sources=Libraries\src\ThirdParty\stb_image\stb_image.cpp Libraries\src\ThirdParty\glad\glad.c
+SET sources=Libraries\src\ThirdParty\glad\glad.c
 for /f "delims=" %%f in ('dir /b /a-d Libraries\src\ThirdParty\imgui\*.cpp') do SET sources=!sources! Libraries\src\ThirdParty\imgui\%%f
 for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Graphics\*.cpp') do SET sources=!sources! Libraries\src\Graphics\%%f
 REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\*.cpp') do SET sources=!sources! Libraries\src\%%f
@@ -20,6 +20,7 @@ SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lstb_image -lpsapi
 
 SET outputName=main
 
+set defines=-D STB_IMAGE_IMPLEMENTATION
 SET definesDEBUG=-D DEBUG -D NDEBUG
 SET definesRELEASE=-D RELEASE
 
@@ -70,7 +71,7 @@ if %IsDEBUG%==true (
     echo/
 
     echo Building DEBUG...
-    g++ %MainSource% %sources% -o bin/debug/%outputName% -std=c++20 -g -Og -Wall -Wextra -m64 %includes% %definesDEBUG% %links% && (
+    g++ %MainSource% %sources% -o bin/debug/%outputName% -std=c++20 -g -Og -Wall -Wextra -m64 %includes% %defines% %definesDEBUG% %links% && (
         echo Compilation successful 
         if %IsRELEASE%==false (
             start launch.exe -d -n %outputName%
@@ -96,7 +97,7 @@ if %IsRELEASE%==true (
     echo/
 
     echo Building RELEASE...
-    g++ %MainSource% %sources% -o bin/release/%outputName% -Wall -Wextra -Werror -std=c++20 -O3 -m64 %includes% %definesRELEASE% %links% && (
+    g++ %MainSource% %sources% -o bin/release/%outputName% -Wall -Wextra -Werror -std=c++20 -O3 -m64 %includes% %defines% %definesRELEASE% %links% && (
          echo Compilation successful 
          if %IsDEBUG%==false ( 
             start bin\release\%outputName%.exe 

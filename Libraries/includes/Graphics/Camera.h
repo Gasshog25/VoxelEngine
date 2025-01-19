@@ -14,7 +14,6 @@ class Camera
 {
 public:
     Camera(int width, int height, glm::vec3 position);
-    ~Camera() = default;
 
     void updateResolution(int width, int height);
     void updateMatrix(float FOVdeg, float nearPlane, float farPlane);

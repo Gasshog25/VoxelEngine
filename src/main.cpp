@@ -1,23 +1,11 @@
-#include <iostream>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include <cmath>
 #include <thread>
 #include <chrono>
 
-#include "Shader.h"
-#include "VAO.h"
-#include "VBO.h"
-#include "EBO.h"
-#include "Texture.h"
-#include "Camera.h"
+#include "Mesh.h"
 
 // Vertices coordinates
-GLfloat vertices[] =
+std::vector<GLfloat> vertices =
 {
 	// Front face
 	-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 	 0.0f,  0.0f,  1.0f,
@@ -57,7 +45,7 @@ GLfloat vertices[] =
 };
 
 // Indices for vertices order
-GLuint indices[] =
+std::vector<GLuint> indices =
 {
 	// Front face
 	0, 2, 1, // Upper triangle
@@ -84,7 +72,7 @@ GLuint indices[] =
 	20, 22, 23, // Lower triangle
 };
 
-GLfloat lightVertices[] =
+std::vector<GLfloat> lightVertices =
 { //     COORDINATES     //
 	-0.1f, -0.1f,  0.1f,
 	-0.1f, -0.1f, -0.1f,
@@ -96,7 +84,7 @@ GLfloat lightVertices[] =
 	 0.1f,  0.1f,  0.1f
 };
 
-GLuint lightIndices[] =
+std::vector<GLuint> lightIndices =
 {
 	0, 1, 2,
 	0, 2, 3,
@@ -142,64 +130,32 @@ int main() {
     glViewport(0, 0, width, height);
     glfwWindowHint(GLFW_REFRESH_RATE, GL_DONT_CARE);
     // glfwSwapInterval(1);
-    
 
 	// First Object
-    Shader shaderProgram("res/shader/default.vert", "res/shader/default.frag");
-	VAO VAO1;
-	VAO1.Bind();
+	
+	Mesh PilouMesh(vertices, indices, {3, 2, 3});
+	PilouMesh.SetShader("res/shader/default.vert", "res/shader/default.frag");
+	PilouMesh.AddTexture("res/img/pilou.jpg", "tex0", GL_RGB, GL_UNSIGNED_BYTE);
+	PilouMesh.InitUniform();
 
-	VBO VBO1(vertices, sizeof(vertices));
-	EBO EBO1(indices, sizeof(indices));
-
-	VAO1.LinkAttrib(VBO1, 0, 3, GL_FLOAT, 8 * sizeof(float), (void*)0);
-	VAO1.LinkAttrib(VBO1, 1, 2, GL_FLOAT, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-	VAO1.LinkAttrib(VBO1, 2, 3, GL_FLOAT, 8 * sizeof(float), (void*)(5 * sizeof(float)));
-
-	VAO1.Unbind();
-	VBO1.Unbind();
-	EBO1.Unbind();
-
-    Texture Pilou = Texture("res/img/pilou.jpg", GL_TEXTURE_2D, GL_TEXTURE0, GL_RGB, GL_UNSIGNED_BYTE);
-    Pilou.texUnit(shaderProgram, "tex0", 0);
 
 	// Light
-	Shader lightSahder = Shader("res/shader/light.vert", "res/shader/light.frag");
-	VAO VAO2;
-	VAO2.Bind();
-
-	VBO VBO2(lightVertices, sizeof(lightVertices));
-	EBO EBO2(lightIndices, sizeof(lightIndices));
-
-	VAO2.LinkAttrib(VBO2, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
-
-	VAO2.Unbind();
-	VBO2.Unbind();
-	EBO2.Unbind();
-
-	
-
-	glm::vec3 CubePos = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::mat4 CubeModel = glm::mat4(1.0f);
-	CubeModel = glm::translate(CubeModel, CubePos);
+	Mesh lightMesh(lightVertices, lightIndices, {3});
+	lightMesh.SetShader("res/shader/light.vert", "res/shader/light.frag");
+	lightMesh.SetPosition(glm::vec3(0.7f, 0.8f, 0.7f));
+	lightMesh.SetScale(glm::vec3(0.2f, 0.2f, 0.2f));
+	lightMesh.InitUniform();
 
 	glm::vec4 lightColor = glm::vec4(0.99f, 0.98f, 1.0f, 1.0f);
 	glm::vec4 AmbientLight = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 	float AmbientStrength = 0.15f;
-	glm::vec3 lightPos = glm::vec3(0.7f, 0.8f, 0.7f);
-	glm::mat4 lightModel = glm::mat4(1.0f);
-	lightModel = glm::translate(lightModel, lightPos);
+	
 
-	shaderProgram.Activate();
-	glUniformMatrix4fv(glGetUniformLocation(shaderProgram.GetID(), "model"), 1, GL_FALSE, glm::value_ptr(CubeModel));
-	glUniform4fv(glGetUniformLocation(shaderProgram.GetID(), "lightColor"), 1, glm::value_ptr(lightColor));
-	glUniform4fv(glGetUniformLocation(shaderProgram.GetID(), "AmbientLight"), 1, glm::value_ptr(AmbientLight * AmbientStrength));
-	glUniform3fv(glGetUniformLocation(shaderProgram.GetID(), "lightPos"), 1, glm::value_ptr(lightPos));
+	PilouMesh.InitUniform4f("lightColor", glm::value_ptr(lightColor));
+	PilouMesh.InitUniform4f("AmbientLight", glm::value_ptr(AmbientLight * AmbientStrength));
+	PilouMesh.InitUniform3f("lightPos", glm::value_ptr(lightMesh.GetPosition()));
 
-	lightSahder.Activate();
-	glUniformMatrix4fv(glGetUniformLocation(lightSahder.GetID(), "model"), 1, GL_FALSE, glm::value_ptr(lightModel));
-	glUniform4fv(glGetUniformLocation(lightSahder.GetID(), "lightColor"), 1, glm::value_ptr(lightColor));
-
+	lightMesh.InitUniform4f("lightColor", glm::value_ptr(lightColor));
 
 
     Camera cam = Camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
@@ -215,7 +171,6 @@ int main() {
         
         // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
         glfwPollEvents();
-
         int frameWidth, frameHeight;
 		glfwGetWindowSize(window, &frameWidth, &frameHeight);
 
@@ -227,28 +182,15 @@ int main() {
 			cam.updateResolution(width, height);
 		}
 
-
         glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
         cam.Inputs(window, ElapseTime);
         cam.updateMatrix(75.0f, 0.1f, 1000.0f);
 
-
-        // Draw our first triangle
-        shaderProgram.Activate();
-		glUniform3fv(glGetUniformLocation(shaderProgram.GetID(), "camPos"), 1, glm::value_ptr(cam.GetPosition()));
-        cam.Matrix(shaderProgram, "camMatrix");
-        // Bind every thing
-        Pilou.Bind();
-        VAO1.Bind();
-        // Draw on the screen
-        glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
-
-		lightSahder.Activate();
-		cam.Matrix(lightSahder, "camMatrix");
-		VAO2.Bind();
-		glDrawElements(GL_TRIANGLES, sizeof(lightIndices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+        // Draw Objects
+		PilouMesh.Draw(cam);
+		lightMesh.Draw(cam);
 
         glfwSwapBuffers(window);
 		frame++;
@@ -256,13 +198,8 @@ int main() {
     }
 
 
-
-    VAO1.Delete();
-	VBO1.Delete();
-	EBO1.Delete();
-    Pilou.Delete();
-
-	shaderProgram.Delete();
+	PilouMesh.Destroy();
+	lightMesh.Destroy();
 
     // Delete window before ending the program
     glfwDestroyWindow(window);

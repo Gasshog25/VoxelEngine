@@ -14,15 +14,23 @@ class Shader
 {
 public:
     Shader(const char* vertexPath, const char* fragmentPath);
-    ~Shader();
+    Shader() = default;
+
+    void SetShader(const char* vertexPath, const char* fragmentPath);
+    void CompileShader();
 
     void Activate();
-    void Delete();
+    void Destroy();
 
     GLuint GetID() { return this->ID; }
 
 private:
     GLuint ID;
+
+    const char* vertexShaderPath;
+    const char* fragmentShaderPath;
+
+    bool isCompiled = false;
 
 private:
 	void compileErrors(unsigned int shader, const char* type);

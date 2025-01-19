@@ -1,15 +1,15 @@
 #include "EBO.h"
 
-EBO::EBO(GLuint* indices, GLsizeiptr size)
+EBO::EBO(std::vector<GLuint>& indices)
 {
     glGenBuffers(1, &this->ID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->ID);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 }
 
 EBO::~EBO()
 {
-    this->Delete();
+    this->Destroy();
 }
 
 void EBO::Bind()
@@ -22,7 +22,7 @@ void EBO::Unbind()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-void EBO::Delete()
+void EBO::Destroy()
 {
     glDeleteBuffers(1, &this->ID);
 }

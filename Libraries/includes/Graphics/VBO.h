@@ -1,16 +1,17 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <vector>
 
 class VBO
 {
 public:
-    VBO(GLfloat* vertices, GLsizeiptr size);
+    VBO(std::vector<GLfloat>& vertices);
     ~VBO();
 
     void Bind();
     void Unbind();
-    void Delete();
+    void Destroy();
 
 private:
     GLuint ID;

@@ -88,5 +88,5 @@ vec4 spotLight()
 
 void main()
 {
-   FragColor = texture(tex0, texCoord) * (pointLight() + directLight());
+   FragColor = (texture(tex0, texCoord) + vec4(0.07f)) / 1.1f * (pointLight() + directLight());
 }
