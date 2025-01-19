@@ -169,7 +169,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         StartTime = glfwGetTime();
         
-        // Check if any events have been activated (key pressed, mouse moved etc.) and call corresponding response functions
+        // Check if any events have been activated (key pressed, mouse moved etc.)
         glfwPollEvents();
         int frameWidth, frameHeight;
 		glfwGetWindowSize(window, &frameWidth, &frameHeight);

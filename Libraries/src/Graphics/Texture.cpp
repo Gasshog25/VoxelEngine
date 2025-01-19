@@ -13,7 +13,7 @@ Texture::Texture(const char* image, const char* name, GLuint slot, GLenum format
         widthImg = 2;
         heightImg = 2;
         numColCh = 4;
-        unsigned char bytesDefault[] = {
+        static unsigned char bytesDefault[] = {
             238, 130, 238, 255,   // Violet pixel
             0, 0, 0, 255,   // Black pixel
             0, 0, 0, 255,   // Black pixel
