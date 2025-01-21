@@ -1,20 +1,16 @@
 #include "Camera.h"
 
-Camera::Camera(int width, int height, glm::vec3 position)
+Camera::Camera(int *width, int *height, glm::vec3 position)
     : position(position), width(width), height(height) {}
 
-void Camera::updateResolution(int width, int height) {
-    this->width = width;
-    this->height = height;
-    this->firstClick = true;
-}
+
 
 void Camera::updateMatrix(float FOVdeg, float nearPlane, float farPlane) {
     glm::mat4 view = glm::mat4(1.0f);
     glm::mat4 projection = glm::mat4(1.0f);
 
     view = glm::lookAt(this->position, this->position + this->Orientation, this->up);
-    projection = glm::perspective(glm::radians(FOVdeg), (float)this->width / this->height, nearPlane, farPlane);
+    projection = glm::perspective(glm::radians(FOVdeg), (float)(*this->width) / *this->height, nearPlane, farPlane);
 
     this->camMatrix = projection * view;
 }
@@ -55,15 +51,15 @@ void Camera::Inputs(GLFWwindow* window, float ElapseTime) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
         if (firstClick) {
-            glfwSetCursorPos(window, (this->width / 2), (this->height / 2));
+            glfwSetCursorPos(window, (*this->width / 2), (*this->height / 2));
             firstClick = false;
         }
 
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
-        float rotX = this->sensitivity * (float)(mouseX - (this->width / 2)) / (float)this->width;
-        float rotY = this->sensitivity * (float)(mouseY - (this->height / 2)) / (float)this->height;
+        float rotX = this->sensitivity * (float)(mouseX - (*this->width / 2)) / (float)(*this->width);
+        float rotY = this->sensitivity * (float)(mouseY - (*this->height / 2)) / (float)(*this->height);
 
         glm::vec3 newOrientation = glm::rotate(this->Orientation, glm::radians(-rotY), glm::normalize(glm::cross(this->Orientation, this->up)));
 
@@ -73,7 +69,7 @@ void Camera::Inputs(GLFWwindow* window, float ElapseTime) {
 
         this->Orientation = glm::rotate(this->Orientation, glm::radians(-rotX), this->up);
 
-        glfwSetCursorPos(window, (this->width / 2), (this->height / 2));
+        glfwSetCursorPos(window, (*this->width / 2), (*this->height / 2));
     }
     else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_RELEASE) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);

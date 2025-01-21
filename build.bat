@@ -13,9 +13,10 @@ SET MainSource=src/main.cpp
 SET sources=Libraries\src\ThirdParty\glad\glad.c
 for /f "delims=" %%f in ('dir /b /a-d Libraries\src\ThirdParty\imgui\*.cpp') do SET sources=!sources! Libraries\src\ThirdParty\imgui\%%f
 for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Graphics\*.cpp') do SET sources=!sources! Libraries\src\Graphics\%%f
+for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Profiler\*.cpp') do SET sources=!sources! Libraries\src\Profiler\%%f
 REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\*.cpp') do SET sources=!sources! Libraries\src\%%f
 
-SET includes=-I Libraries/includes -I Libraries/includes/ThirdParty -I Libraries\includes\Graphics
+SET includes=-I Libraries/includes -I Libraries/includes/ThirdParty -I Libraries\includes\Graphics -I Libraries\includes\Profiler
 SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lstb_image -lpsapi
 
 SET outputName=main
@@ -71,7 +72,7 @@ if %IsDEBUG%==true (
     echo/
 
     echo Building DEBUG...
-    g++ %MainSource% %sources% -o bin/debug/%outputName% -std=c++20 -g -Og -Wall -Wextra -Werror -m64 %includes% %defines% %definesDEBUG% %links% && (
+    g++ %MainSource% %sources% -o bin/debug/%outputName% -std=c++23 -g -Og -Wall -Wextra -Werror -m64 %includes% %defines% %definesDEBUG% %links% && (
         echo Compilation successful 
         if %IsRELEASE%==false (
             start launch.exe -d -n %outputName%
@@ -97,7 +98,7 @@ if %IsRELEASE%==true (
     echo/
 
     echo Building RELEASE...
-    g++ %MainSource% %sources% -o bin/release/%outputName% -Wall -Wextra -Werror -std=c++20 -O3 -m64 %includes% %defines% %definesRELEASE% %links% && (
+    g++ %MainSource% %sources% -o bin/release/%outputName% -Wall -Wextra -Werror -std=c++23 -O3 -m64 %includes% %defines% %definesRELEASE% %links% && (
          echo Compilation successful 
          if %IsDEBUG%==false ( 
             start bin\release\%outputName%.exe 
@@ -105,4 +106,4 @@ if %IsRELEASE%==true (
     )
 )
 
-REM g++ -std=c++17 -shared -o mylib.dll mylib.cpp
+REM g++ -std=c++23 -shared -o mylib.dll mylib.cpp

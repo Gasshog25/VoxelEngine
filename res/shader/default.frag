@@ -74,7 +74,7 @@ vec4 spotLight()
    // specular light
    vec3 viexDirection = normalize(camPos - crntPos);
    vec3 reflectionDirection = reflect(-lightDirection, norm);
-   float specAmount = pow(max(dot(viexDirection, reflectionDirection), 0.0f), 16);
+   float specAmount = pow(max(dot(viexDirection, reflectionDirection), 0.0f), 64);
    float specularLight = 0.5f;
    float specular = specAmount * specularLight;
 

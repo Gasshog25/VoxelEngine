@@ -1,7 +1,6 @@
-#include <cmath>
-#include <thread>
-#include <chrono>
+#include <iostream>
 
+#include "Window.h"
 #include "Mesh.h"
 
 // Vertices coordinates
@@ -103,33 +102,9 @@ std::vector<GLuint> lightIndices =
 int width = 800, height = 800;
 
 int main() {
-    // Initialize GLFW
-    glfwInit();
 
-    // Tell GLFW what version of OpenGL we want to use
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // Tell GLFW we are using the core profile (Only the modern functions will be available)
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-
-    // Create a window of size 800x800 and called "OpenGL"
-    GLFWwindow* window = glfwCreateWindow(width, height, "OpenGL", NULL, NULL);
-    if (window == NULL) {
-        std::cout << "Failed to create GLFW window" << std::endl;
-        glfwTerminate();
-        return -1;
-    }
-    // Make the window's context current
-    glfwMakeContextCurrent(window);
-
-    // Initialize GLAD to load all OpenGL function pointers
-    gladLoadGL();
-
-    // Define the viewport dimensions
-    glViewport(0, 0, width, height);
-    glfwWindowHint(GLFW_REFRESH_RATE, GL_DONT_CARE);
-    // glfwSwapInterval(1);
+	Window window;
+	window.Init();
 
 	// First Object
 	
@@ -158,43 +133,25 @@ int main() {
 	lightMesh.InitUniform4f("lightColor", glm::value_ptr(lightColor));
 
 
-    Camera cam = Camera(width, height, glm::vec3(0.0f, 0.0f, 2.0f));
+	int *w = window.GetWidthptr();
+	int *h = window.GetHeightptr();
+    Camera cam = Camera(w, h, glm::vec3(0.0f, 0.0f, 2.0f));
     
-    float StartTime = glfwGetTime();
-    float ElapseTime = 1.0f / 60.0f;
-    long int frame = 0;
-	
-    // Render loop
-    glEnable(GL_DEPTH_TEST);
-    while (!glfwWindowShouldClose(window)) {
-        StartTime = glfwGetTime();
-        
-        // Check if any events have been activated (key pressed, mouse moved etc.)
-        glfwPollEvents();
-        int frameWidth, frameHeight;
-		glfwGetWindowSize(window, &frameWidth, &frameHeight);
-
-		// Check if the window has been resized
-		if (frameWidth != width || frameHeight != height) {
-			width = frameWidth;
-			height = frameHeight;
-			glViewport(0, 0, width, height);
-			cam.updateResolution(width, height);
-		}
-
-        glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-        cam.Inputs(window, ElapseTime);
+    // Render loop
+    while (!window.ShouldClose()) {
+
+		window.NewFrame();
+
+		
+        cam.Inputs(window.GetWindow(), window.GetElapseTimeSecond());
         cam.updateMatrix(75.0f, 0.1f, 1000.0f);
 
         // Draw Objects
 		PilouMesh.Draw(cam);
 		lightMesh.Draw(cam);
 
-        glfwSwapBuffers(window);
-		frame++;
-        ElapseTime = glfwGetTime() - StartTime;
+		window.SwapBuffers();
     }
 
 
@@ -202,6 +159,5 @@ int main() {
 	lightMesh.Destroy();
 
     // Delete window before ending the program
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    window.Close();
 }
