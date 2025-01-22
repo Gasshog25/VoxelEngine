@@ -11,13 +11,12 @@ setlocal enabledelayedexpansion
 SET MainSource=src/main.cpp
 
 SET sources=Libraries\src\ThirdParty\glad\glad.c
-for /f "delims=" %%f in ('dir /b /a-d Libraries\src\ThirdParty\imgui\*.cpp') do SET sources=!sources! Libraries\src\ThirdParty\imgui\%%f
-for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Graphics\*.cpp') do SET sources=!sources! Libraries\src\Graphics\%%f
-for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Profiler\*.cpp') do SET sources=!sources! Libraries\src\Profiler\%%f
+REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Graphics\*.cpp') do SET sources=!sources! Libraries\src\Graphics\%%f
+REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Profiler\*.cpp') do SET sources=!sources! Libraries\src\Profiler\%%f
 REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\*.cpp') do SET sources=!sources! Libraries\src\%%f
 
 SET includes=-I Libraries/includes -I Libraries/includes/ThirdParty -I Libraries\includes\Graphics -I Libraries\includes\Profiler
-SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lstb_image -lpsapi
+SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lstb_image -lpsapi -L Libraries/libs/Profiler -lprofiler -L Libraries/libs/Graphics -lgraphics
 
 SET outputName=main
 
