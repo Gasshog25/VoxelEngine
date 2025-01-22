@@ -72,15 +72,15 @@ std::vector<GLuint> indices =
 };
 
 std::vector<GLfloat> lightVertices =
-{ //     COORDINATES     //
+{ //	COORDINATES		//
 	-0.1f, -0.1f,  0.1f,
 	-0.1f, -0.1f, -0.1f,
-	 0.1f, -0.1f, -0.1f,
-	 0.1f, -0.1f,  0.1f,
+	0.1f, -0.1f, -0.1f,
+	0.1f, -0.1f,  0.1f,
 	-0.1f,  0.1f,  0.1f,
 	-0.1f,  0.1f, -0.1f,
-	 0.1f,  0.1f, -0.1f,
-	 0.1f,  0.1f,  0.1f
+	0.1f,  0.1f, -0.1f,
+	0.1f,  0.1f,  0.1f
 };
 
 std::vector<GLuint> lightIndices =
@@ -135,29 +135,39 @@ int main() {
 
 	int *w = window.GetWidthptr();
 	int *h = window.GetHeightptr();
-    Camera cam = Camera(w, h, glm::vec3(0.0f, 0.0f, 2.0f));
-    
+	Camera cam = Camera(w, h, glm::vec3(0.0f, 0.0f, 2.0f));
+	
 		
-    // Render loop
-    while (!window.ShouldClose()) {
-
+	// Render loop
+	while (!window.ShouldClose()) {
 		window.NewFrame();
-
 		
-        cam.Inputs(window.GetWindow(), window.GetElapseTimeSecond());
-        cam.updateMatrix(75.0f, 0.1f, 1000.0f);
+		// Render FPS and elapsed time on the window using OpenGL
 
-        // Draw Objects
+		std::string title = "fps: " + std::to_string(window.GetFPS()) + 
+							", min fps: " + std::to_string(window.GetMinFPS()) +
+							", max fps: " + std::to_string(window.GetMaxFPS()) +
+							", Avg fps: " + std::to_string(window.GetAverageFPS()) +
+							", Elapsed Time: " + std::to_string(window.GetElapseTimeMillisecond()) + "ms" +
+							", Avg Elapsed Time: " + std::to_string(window.GetAverageElapseTimeMillisecond()) + "ms";
+		glfwSetWindowTitle(window.GetWindow(), title.c_str());
+
+		cam.Inputs(window.GetWindow(), 1.0 / window.GetFPS());
+		cam.updateMatrix(75.0f, 0.1f, 1000.0f);
+
+		// Draw Objects
 		PilouMesh.Draw(cam);
 		lightMesh.Draw(cam);
 
+		
+
 		window.SwapBuffers();
-    }
+	}
 
 
 	PilouMesh.Destroy();
 	lightMesh.Destroy();
 
-    // Delete window before ending the program
-    window.Close();
+	// Delete window before ending the program
+	window.Close();
 }

@@ -2,59 +2,82 @@ template <typename Type>
 class RingBuffer 
 {
 public:
-    RingBuffer()
-    {
-        this->buffer = new Type[100];
-        this->size = 100;
-        this->fisrt = 0;
-        this->last = 0;
+    RingBuffer() {
+        this->Init(50);
     }
 
     RingBuffer(int capacity)
     {
-        this->buffer = new Type[capacity];
-        this->size = capacity;
-        this->fisrt = 0;
-        this->last = 0;
+        this->Init(capacity);
     }
 
-    ~RingBuffer()
+    void Init(int capacity) {
+        this->capacity = capacity;
+        if (this->buffer != nullptr)
+            delete[] this->buffer;
+        this->buffer = new Type[this->capacity] { Type(0) };
+    };
+
+    void Destroy()
     {
-        delete[] this->buffer;
-    }
+        if (this->buffer != nullptr)
+            delete[] this->buffer;
+    };
 
 
     void push(Type value)
     {
-        this->buffer[this->last] = value;
+        this->index = (this->index + 1) % this->capacity;
+        this->buffer[this->index] = value;
+    };
 
-        this->last = (this->last + 1) % this->size;
-        if (this->last == this->fisrt) {
-            this->fisrt = (this->fisrt + 1) % this->size;
+    void resize(int size) {
+        Type *newBuffer = new Type[size] { Type(0) };
+        for (int i = 0; i < this->capacity && i < size; i++) {
+            newBuffer[i] = this->buffer[i];
         }
+
+        if (this->buffer != nullptr)
+            delete[] this->buffer;
+        this->capacity = size;
+        this->buffer = newBuffer;
+    }
+
+    int size()
+    {
+        return this->capacity;
+    };
+
+    Type get(int i)
+    {
+        return this->buffer[(this->index + i - 1) % this->capacity];
     };
 
 
     Type getAverage()
     {
-        int count;
-        if (this->last >= this->fisrt) {
-            count = this->last - this->fisrt;
-        } else {
-            count = this->size - this->fisrt + this->last;
-        }
-        Type sum = Type(0);
-        for (int i = this->fisrt; i != this->last; i = (i + 1) % this->size) {
+        Type sum = this->buffer[0];
+        for (int i = 1; i < capacity; i++) {
             sum += this->buffer[i];
         }
 
-        return sum / count;
+        return sum / this->size();
+    };
+
+    Type getSum()
+    {
+        Type sum = this->buffer[0];
+        for (int i = 1; i < capacity; i++) {
+            sum += this->buffer[i];
+        }
+
+        return sum;
     };
 
     Type getMin()
     {
-        Type min = this->buffer[this->fisrt];
-        for (int i = this->fisrt + 1; i != this->last; i = (i + 1) % this->size) {
+        Type min = this->buffer[0];
+        for (int i = 1; i < capacity; i++) {
             if (this->buffer[i] < min) {
                 min = this->buffer[i];
             }
@@ -65,19 +88,18 @@ public:
 
     Type getMax()
     {
-        Type max = this->buffer[this->fisrt];
-        for (int i = this->fisrt + 1; i != this->last; i = (i + 1) % this->size) {
+        Type max = this->buffer[0];
+        for (int i = 1; i < capacity; i++) {
             if (this->buffer[i] > max) {
                 max = this->buffer[i];
             }
         }        
 
         return max;
-    }
+    };
 
 private:
-    int size;
-    int fisrt;
-    int last;
-    Type *buffer;
+    int capacity;
+    int index = 0;
+    Type *buffer = nullptr;
 };

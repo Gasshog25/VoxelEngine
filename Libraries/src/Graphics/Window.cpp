@@ -10,9 +10,11 @@ Window::Window() {
     this->parameters.minorVersion = 3;
     this->parameters.IsDepthEnable = true;
     this->parameters.maxFPS = 60;
-    this->parameters.vsync = true;
+    this->parameters.vsync = false;
     this->parameters.fullscreen = false;
     this->parameters.clearColor = glm::vec4(0.07f, 0.13f, 0.17f, 1.0f);
+    this->parameters.trueEveryms = 500;
+    this->lastTime = this->fpsCounter.getLastTime();
 }
 
 Window::~Window() {
@@ -74,8 +76,8 @@ void Window::Update() {
     }
 }
 
-void Window::NewFrame() {
-    this->fpsCounter.newFrame();
+bool Window::NewFrame() {
+    this->fpsCounter.newFrame(this->parameters.maxFPS);
     glfwPollEvents();
     this->ProcessInput();
     this->Update();
@@ -83,6 +85,19 @@ void Window::NewFrame() {
     
     glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if (this->parameters.trueEveryms == 0) {
+        this->fpsCounter.UpdateStat();
+        return true;
+    }
+    auto now = this->fpsCounter.getTime();
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(now - this->lastTime).count() >= this->parameters.trueEveryms) {
+        this->fpsCounter.UpdateStat();
+        this->lastTime = now;
+        return true;
+    }
+    
+    return false;
 }
 
 void Window::ProcessInput() {
@@ -93,8 +108,6 @@ void Window::ProcessInput() {
 
 void Window::SwapBuffers() {
     glfwSwapBuffers(this->window);
-
-    this->fpsCounter.endFrame(this->parameters.maxFPS);
 }
 
 
@@ -106,4 +119,10 @@ void Window::ChangeDepth(bool IsDepthEnable) {
     else {
         glDisable(GL_DEPTH_TEST);
     }
+}
+
+
+
+void Window::trueEvery(double ms) {
+    this->parameters.trueEveryms = ms;
 }

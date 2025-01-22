@@ -24,6 +24,8 @@ struct Parameters
     bool vsync;
     bool fullscreen;
 
+    double trueEveryms;
+
     glm::vec4 clearColor;
 };
 
@@ -38,7 +40,7 @@ public:
     int Init();
     void Update();
     void ProcessInput();
-    void NewFrame();
+    bool NewFrame();
     void SwapBuffers();
     
     void Close();
@@ -56,9 +58,22 @@ public:
 
     GLFWwindow* GetWindow() { return this->window; }
 
-    FPSCounter GetFPSCounter() { return this->fpsCounter; }
+    int GetFrame() { return this->fpsCounter.getFrame(); }
+    void trueEvery(double ms);
     double GetFPS() { return this->fpsCounter.getFPS(); }
+    double GetAverageFPS() { return this->fpsCounter.getAverageFPS(); }
+    double GetMaxFPS() { return this->fpsCounter.getMaxFPS(); }
+    double GetMinFPS() { return this->fpsCounter.getMinFPS(); }
+
     double GetElapseTimeSecond() { return this->fpsCounter.getElapseTimeInSeconds(); }
+    double GetAverageElapseTimeSecond() { return this->fpsCounter.getAverageElapseTimeInSeconds(); }
+    double GetMaxElapseTimeSecond() { return this->fpsCounter.getMaxElapseTimeInSeconds(); }
+    double GetMinElapseTimeSecond() { return this->fpsCounter.getMinElapseTimeInSeconds(); }
+    
+    double GetElapseTimeMillisecond() { return this->fpsCounter.getElapseTimeInMilliseconds(); }
+    double GetAverageElapseTimeMillisecond() { return this->fpsCounter.getAverageElapseTimeInMilliseconds(); }
+    double GetMaxElapseTimeMillisecond() { return this->fpsCounter.getMaxElapseTimeInMilliseconds(); }
+    double GetMinElapseTimeMillisecond() { return this->fpsCounter.getMinElapseTimeInMilliseconds(); }
 
 private:
     GLFWwindow* window;
@@ -66,4 +81,6 @@ private:
     Parameters parameters;
 
     FPSCounter fpsCounter;
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> lastTime;
 };

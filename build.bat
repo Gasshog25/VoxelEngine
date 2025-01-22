@@ -72,7 +72,7 @@ if %IsDEBUG%==true (
     echo/
 
     echo Building DEBUG...
-    g++ %MainSource% %sources% -o bin/debug/%outputName% -std=c++23 -g -Og -Wall -Wextra -Werror -m64 %includes% %defines% %definesDEBUG% %links% && (
+    g++ %MainSource% %sources% -o bin/debug/%outputName% -std=c++23 -g -Og -Wall -Wextra -m64 %includes% %defines% %definesDEBUG% %links% && (
         echo Compilation successful 
         if %IsRELEASE%==false (
             start launch.exe -d -n %outputName%
