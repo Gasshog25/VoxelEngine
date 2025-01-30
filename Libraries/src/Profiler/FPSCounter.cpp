@@ -20,18 +20,14 @@ void FPSCounter::newFrame(int maxFPS) {
     // Calcul ElapseTime
     auto currentTime = std::chrono::high_resolution_clock::now();
     this->elapseTime = currentTime - this->lastTime;
-    this->fps = 1.0e9 / this->elapseTime.count();
+    
+    
+    while (this->getTime() < this->lastTime + std::chrono::duration<double>(1.0 / maxFPS)) {}
 
-    // Sleep if needed
-    auto timeToWait = std::chrono::duration<double>(1.0 / maxFPS -  1.1 / (this->avgFps * 0.5 + this->fps * 0.5));
-    if (timeToWait.count() > 0) {
-        std::this_thread::sleep_for(std::chrono::duration_cast<std::chrono::milliseconds>(timeToWait));
-	
-        // Update FPS
-        currentTime = std::chrono::high_resolution_clock::now();
-        auto elapse = currentTime - this->lastTime;
-        this->fps = 1.0e9 / elapse.count();
-    }
+    // Calcul FPS
+    currentTime = std::chrono::high_resolution_clock::now();
+    auto elapse = currentTime - this->lastTime;
+    this->fps = 1.0e9 / elapse.count();
 
     // Update lastTime
     this->lastTime = currentTime;
