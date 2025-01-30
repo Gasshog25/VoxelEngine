@@ -10,13 +10,14 @@ setlocal enabledelayedexpansion
 
 SET MainSource=src/main.cpp
 
-SET sources=Libraries\src\ThirdParty\glad\glad.c
+SET sources=
+REM Libraries\src\ThirdParty\glad\glad.c
 REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Graphics\*.cpp') do SET sources=!sources! Libraries\src\Graphics\%%f
 REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Profiler\*.cpp') do SET sources=!sources! Libraries\src\Profiler\%%f
 REM for /f "delims=" %%f in ('dir /b /a-d Libraries\src\*.cpp') do SET sources=!sources! Libraries\src\%%f
 
 SET includes=-I Libraries/includes -I Libraries/includes/ThirdParty -I Libraries\includes\Graphics -I Libraries\includes\Profiler
-SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lstb_image -lpsapi -L Libraries/libs/Profiler -lprofiler -L Libraries/libs/Graphics -lgraphics
+SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lglad -lstb_image -lpsapi -L Libraries/libs/Profiler -lprofiler -L Libraries/libs/Graphics -lgraphics
 
 SET outputName=main
 
@@ -33,12 +34,14 @@ setlocal
 REM 
 set "IsDEBUG=true"
 set "IsRELEASE=true"
-
+set "IsComplete=false"
 
 
 for %%x in (%*) DO (
     set p=%%x1
-    if /i "!p:~0,1!"=="-" (
+    if /i %%x==-c (
+        SET "IsComplete=true"
+    ) else if /i "!p:~0,1!"=="-" (
         SET outputName="!p:~1,-1!"
     ) else if /i %%x==DEBUG (
         set "IsDEBUG=true"
@@ -54,6 +57,11 @@ for %%x in (%*) DO (
 echo File : %MainSource%
 echo output name : %outputName%
 echo/
+
+if %IsComplete%==true (
+    call buildGraphicsLib.bat
+    call buildProfilerLib.bat
+)
 
 REM BUILD DEBUG
 if %IsDEBUG%==true (

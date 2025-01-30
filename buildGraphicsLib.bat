@@ -8,11 +8,12 @@ REM ////////////////////////////////////////////////////////////////////////
 setlocal enabledelayedexpansion
 
 
-SET sources=Libraries\src\ThirdParty\glad\glad.c
+SET sources=
+REM Libraries\src\ThirdParty\glad\glad.c
 for /f "delims=" %%f in ('dir /b /a-d Libraries\src\Graphics\*.cpp') do SET sources=!sources! Libraries\src\Graphics\%%f
 
 SET includes=-I Libraries/includes -I Libraries/includes/ThirdParty -I Libraries\includes\Graphics -I Libraries\includes\Profiler
-SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lstb_image -L Libraries/libs/Profiler -lprofiler
+SET links=-L Libraries/libs/ThirdParty -lglfw3dll -lglad -lstb_image -L Libraries/libs/Profiler -lprofiler
 
 
 rmdir "Libraries\libs\Graphics" /S /Q
